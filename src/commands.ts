@@ -70,7 +70,7 @@ export class GhostCommands {
       const content = await (this.plugin as any).app.vault.read(activeFile);
       const payload = await getGhostPayload((this.plugin as any).app, activeFile);
       // Regex correctly excludes Obsidian frontmatter
-      const cleanContent = content.replace(/^---[\s\S]*?---/, '').trim();
+      const cleanContent = this.normalizeMarkdown(content.replace(/^---[\s\S]*?---/, '').trim());
 
       const ghostData: any = {
         title: payload.title,
@@ -81,9 +81,8 @@ export class GhostCommands {
         feature_image: payload.feature_image,
         canonical_url: payload.canonical_url,
         visibility: payload.visibility,
-        // Using mobiledoc ensures Ghost renders the Markdown card correctly
-        mobiledoc: createMarkdownMobiledoc(cleanContent),
       };
+      this.attachContent(ghostData, cleanContent);
 
       if (status === 'scheduled' && publishedAt) {
         ghostData.published_at = publishedAt;
@@ -123,7 +122,7 @@ export class GhostCommands {
 
     try {
       const content = await (this.plugin as any).app.vault.read(activeFile);
-      const cleanContent = content.replace(/^---[\s\S]*?---/, '').trim();
+      const cleanContent = this.normalizeMarkdown(content.replace(/^---[\s\S]*?---/, '').trim());
 
       const ghostData: any = {
         title: payload.title,
@@ -135,8 +134,8 @@ export class GhostCommands {
         canonical_url: payload.canonical_url,
         visibility: payload.visibility,
         published_at: payload.published_at,
-        mobiledoc: createMarkdownMobiledoc(cleanContent),
       };
+      this.attachContent(ghostData, cleanContent);
 
       if (this.plugin.settings.debugMode) {
         console.log('Ghost Publisher [Debug] Update Payload:', ghostData);
@@ -167,5 +166,19 @@ export class GhostCommands {
 
     new Notice(`Ghost Publisher Error: ${actionableMsg}`, 8000);
     console.error('Ghost Publisher Detailed Error:', rawMessage);
+  }
+
+  private attachContent(ghostData: Record<string, unknown>, content: string) {
+    if (this.plugin.settings.contentFormat === 'mobiledoc') {
+      ghostData.mobiledoc = createMarkdownMobiledoc(content);
+      return;
+    }
+
+    ghostData.markdown = content;
+    ghostData.source = 'markdown';
+  }
+
+  private normalizeMarkdown(content: string) {
+    return content.replace(/\r\n?/g, '\n');
   }
 }

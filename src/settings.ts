@@ -7,6 +7,7 @@ export interface GhostPublisherSettings {
   adminApiKey: string;
   rememberKey: boolean;
   debugMode: boolean;
+  contentFormat: 'markdown' | 'mobiledoc';
 }
 
 export const DEFAULT_SETTINGS: GhostPublisherSettings = {
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: GhostPublisherSettings = {
   adminApiKey: '',
   rememberKey: true,
   debugMode: false,
+  contentFormat: 'markdown',
 };
 
 export class GhostPublisherSettingTab extends PluginSettingTab {
@@ -82,6 +84,20 @@ export class GhostPublisherSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl)
+      .setName('Content format')
+      .setDesc('Choose how notes are sent to Ghost. Markdown is best for tables and line breaks.')
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption('markdown', 'Markdown (recommended)')
+          .addOption('mobiledoc', 'Mobiledoc (Markdown card)')
+          .setValue(this.plugin.settings.contentFormat)
+          .onChange(async (value: 'markdown' | 'mobiledoc') => {
+            this.plugin.settings.contentFormat = value;
+            await this.plugin.saveSettings();
+          });
+      });
 
     new Setting(containerEl)
       .setName('Test Connection')

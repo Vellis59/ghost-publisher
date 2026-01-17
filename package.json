@@ -1,0 +1,22 @@
+
+{
+  "name": "ghost-publisher",
+  "version": "1.0.0",
+  "description": "Ghost Publisher Obsidian Plugin",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit && node esbuild.config.mjs production"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "esbuild": "0.17.11",
+    "obsidian": "latest",
+    "tslib": "2.4.0",
+    "typescript": "4.9.3",
+    "jose": "^5.2.3"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Ghost Publisher",
+  "description": "A high-performance Obsidian plugin to publish notes directly to Ghost CMS with full frontmatter support and pre-publish checks.",
+  "requestFramePermissions": []
+}

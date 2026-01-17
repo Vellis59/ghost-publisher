@@ -1,10 +1,10 @@
-
 import { Notice } from 'obsidian';
 import GhostPublisherPlugin from './main';
 import { getGhostPayload, updateFrontmatterAfterPublish } from './frontmatter';
 import { runChecks } from './checks';
 import { ScheduleModal } from './ui/ScheduleModal';
 import { getErrorMessage } from './ghost/errors';
+import { createMarkdownMobiledoc } from './ghost/mobiledoc';
 
 export class GhostCommands {
   plugin: GhostPublisherPlugin;
@@ -35,7 +35,6 @@ export class GhostCommands {
       id: 'ghost-publish-schedule',
       name: 'Schedule Ghost Post',
       callback: () => {
-        // Fix: Access app via any cast to bypass missing property error
         (new ScheduleModal((this.plugin as any).app, (isoDate) => {
           this.handlePublish('scheduled', isoDate);
         }) as any).open();
@@ -58,7 +57,6 @@ export class GhostCommands {
   }
 
   async handlePublish(status: 'draft' | 'published' | 'scheduled', publishedAt?: string) {
-    // Fix: Access app via any cast to bypass missing property error
     const activeFile = (this.plugin as any).app.workspace.getActiveFile();
     if (!activeFile) return;
 
@@ -69,10 +67,9 @@ export class GhostCommands {
     }
 
     try {
-      // Fix: Access app via any cast to bypass missing property error
       const content = await (this.plugin as any).app.vault.read(activeFile);
-      // Fix: Access app via any cast to bypass missing property error
       const payload = await getGhostPayload((this.plugin as any).app, activeFile);
+      // Regex correctly excludes Obsidian frontmatter
       const cleanContent = content.replace(/^---[\s\S]*?---/, '').trim();
 
       const ghostData: any = {
@@ -84,11 +81,17 @@ export class GhostCommands {
         feature_image: payload.feature_image,
         canonical_url: payload.canonical_url,
         visibility: payload.visibility,
-        html: `<div class="kg-card kg-markdown-card">${cleanContent}</div>`,
+        // Using mobiledoc ensures Ghost renders the Markdown card correctly
+        mobiledoc: createMarkdownMobiledoc(cleanContent),
       };
 
       if (status === 'scheduled' && publishedAt) {
         ghostData.published_at = publishedAt;
+      }
+
+      if (this.plugin.settings.debugMode) {
+        console.log('Ghost Publisher [Debug] Payload:', ghostData);
+        new Notice('Check console (Ctrl+Shift+I) for payload preview.');
       }
 
       new Notice(`Publishing to Ghost as ${status}...`);
@@ -100,7 +103,6 @@ export class GhostCommands {
         result = await this.plugin.ghostClient.createPost(ghostData);
       }
 
-      // Fix: Access app via any cast to bypass missing property error
       await updateFrontmatterAfterPublish((this.plugin as any).app, activeFile, result.id, result.status);
       new Notice(`Success: Post is now ${result.status}`);
 
@@ -110,11 +112,9 @@ export class GhostCommands {
   }
 
   async handleUpdate() {
-    // Fix: Access app via any cast to bypass missing property error
     const activeFile = (this.plugin as any).app.workspace.getActiveFile();
     if (!activeFile) return;
 
-    // Fix: Access app via any cast to bypass missing property error
     const payload = await getGhostPayload((this.plugin as any).app, activeFile);
     if (!payload.post_id) {
       new Notice('Error: This note has no ghost.post_id. Use "Publish" commands first.');
@@ -122,11 +122,10 @@ export class GhostCommands {
     }
 
     try {
-      // Fix: Access app via any cast to bypass missing property error
       const content = await (this.plugin as any).app.vault.read(activeFile);
       const cleanContent = content.replace(/^---[\s\S]*?---/, '').trim();
 
-      const ghostData = {
+      const ghostData: any = {
         title: payload.title,
         slug: payload.slug,
         status: payload.status,
@@ -136,13 +135,17 @@ export class GhostCommands {
         canonical_url: payload.canonical_url,
         visibility: payload.visibility,
         published_at: payload.published_at,
-        html: `<div class="kg-card kg-markdown-card">${cleanContent}</div>`,
+        mobiledoc: createMarkdownMobiledoc(cleanContent),
       };
+
+      if (this.plugin.settings.debugMode) {
+        console.log('Ghost Publisher [Debug] Update Payload:', ghostData);
+        new Notice('Check console (Ctrl+Shift+I) for payload preview.');
+      }
 
       new Notice('Updating Ghost post...');
       const result = await this.plugin.ghostClient.updatePost(payload.post_id, ghostData);
       
-      // Fix: Access app via any cast to bypass missing property error
       await updateFrontmatterAfterPublish((this.plugin as any).app, activeFile, result.id, result.status);
       new Notice(`Successfully updated: ${result.title}`);
 

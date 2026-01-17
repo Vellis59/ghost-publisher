@@ -2,10 +2,10 @@
 {
   "id": "ghost-publisher",
   "name": "Ghost Publisher",
-  "version": "0.1.0",
-  "minAppVersion": "1.5.0",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
   "description": "Seamlessly publish your Obsidian notes to Ghost CMS.",
-  "author": "Vellis59",
-  "authorUrl": "https://github.com/Vellis59/ghost-publisher",
+  "author": "Senior Developer",
+  "authorUrl": "https://github.com/example",
   "isDesktopOnly": false
 }

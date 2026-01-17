@@ -75,7 +75,7 @@ export class GhostClient {
 
   async createPost(payload: any): Promise<GhostResponse> {
     const response = await this.request({
-      url: `${this.baseUrl}/posts/?source=html`,
+      url: `${this.baseUrl}/posts/`,
       method: 'POST',
       body: JSON.stringify({ posts: [payload] }),
     });
@@ -85,7 +85,7 @@ export class GhostClient {
 
   async updatePost(id: string, payload: any): Promise<GhostResponse> {
     const response = await this.request({
-      url: `${this.baseUrl}/posts/${id}/?source=html`,
+      url: `${this.baseUrl}/posts/${id}/`,
       method: 'PUT',
       body: JSON.stringify({ posts: [payload] }),
     });

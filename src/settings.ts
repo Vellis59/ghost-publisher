@@ -1,4 +1,3 @@
-
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import GhostPublisherPlugin from './main';
 import { getErrorMessage } from './ghost/errors';
@@ -7,12 +6,14 @@ export interface GhostPublisherSettings {
   siteUrl: string;
   adminApiKey: string;
   rememberKey: boolean;
+  debugMode: boolean;
 }
 
 export const DEFAULT_SETTINGS: GhostPublisherSettings = {
   siteUrl: '',
   adminApiKey: '',
   rememberKey: true,
+  debugMode: false,
 };
 
 export class GhostPublisherSettingTab extends PluginSettingTab {
@@ -24,7 +25,6 @@ export class GhostPublisherSettingTab extends PluginSettingTab {
   }
 
   display(): void {
-    // Fix: Access containerEl via any cast to bypass missing property error
     const containerEl = (this as any).containerEl;
     containerEl.empty();
 
@@ -67,6 +67,18 @@ export class GhostPublisherSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.rememberKey)
           .onChange(async (value) => {
             this.plugin.settings.rememberKey = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Debug mode')
+      .setDesc('Show payload previews in a notice before publishing.')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.debugMode)
+          .onChange(async (value) => {
+            this.plugin.settings.debugMode = value;
             await this.plugin.saveSettings();
           })
       );

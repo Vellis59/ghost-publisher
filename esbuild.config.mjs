@@ -1,5 +1,6 @@
 import esbuild from "esbuild";
-import { argv, exit } from "process";
+// Fix: Import the process object as the default export instead of using named exports for argv and exit
+import process from "process";
 
 const banner =
 `/*
@@ -8,8 +9,8 @@ if you want to view the source, please visit the github repository of this plugi
 */
 `;
 
-// Fix: Use imported 'argv' instead of 'process.argv' to avoid type property errors
-const prod = (argv[2] === "production");
+// Fix: Access argv through the process object
+const prod = (process.argv[2] === "production");
 
 esbuild.build({
 	banner: {
@@ -39,5 +40,5 @@ esbuild.build({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
-// Fix: Use imported 'exit' instead of 'process.exit' to avoid type property errors
-}).catch(() => exit(1));
+// Fix: Access exit through the process object
+}).catch(() => process.exit(1));
